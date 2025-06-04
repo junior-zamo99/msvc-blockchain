@@ -1,0 +1,114 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+input ClienteInput {
+  clienteId: ID
+  email: String
+  nombre: String
+}
+
+type DatabaseVerification {
+  coincideConBD: Boolean!
+  estadoEnBD: String!
+  fechaCreacion: DateTime!
+  hashEnBD: String!
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+input DatosVentaInput {
+  cliente: ClienteInput
+  cuentaMesaId: ID!
+  estado: String!
+  fechaVenta: String!
+  mesa: MesaInput!
+  productos: [ProductoInput!]!
+  tenantId: ID!
+  total: Float!
+  ventaId: ID!
+}
+
+input GenerateHashInput {
+  datosVenta: DatosVentaInput!
+  tenantId: ID!
+  ventaId: ID!
+}
+
+type HashDebugInfo {
+  algorithm: String!
+  hash: String!
+  hashInput: String!
+  inputLength: Int!
+  timestamp: DateTime!
+}
+
+type HashGenerationResult {
+  databaseId: ID
+  error: String
+  hash: HashType
+  message: String
+  success: Boolean!
+}
+
+type HashType {
+  createdAt: DateTime!
+  dataSize: Int!
+  hash: String!
+  hashAlgorithm: String!
+  hashInput: String
+  id: ID!
+  isValid: Boolean!
+  lastVerification: DateTime
+  status: String!
+  tenantId: ID!
+  ventaId: ID!
+  verifiedBy: String
+}
+
+type HashVerificationResult {
+  databaseVerification: DatabaseVerification
+  isValid: Boolean!
+  message: String!
+  timestamp: DateTime!
+}
+
+input MesaInput {
+  capacidad: Int!
+  numero: Int!
+}
+
+type Mutation {
+  generateHash(input: GenerateHashInput!): HashGenerationResult!
+  verifyHash(input: VerifyHashInput!): HashVerificationResult!
+}
+
+input ProductoInput {
+  cantidad: Int!
+  nombre: String!
+  precio: Float!
+  productoId: ID!
+  subtotal: Float!
+}
+
+type Query {
+  debugHash(datosVenta: DatosVentaInput!): HashDebugInfo!
+  restaurantHashes(limit: Int! = 50, tenantId: ID!): RestaurantHashStats!
+  ventaHash(ventaId: ID!): HashType
+}
+
+type RestaurantHashStats {
+  invalidHashes: Int!
+  recentHashes: [HashType!]!
+  tenantId: ID!
+  totalRecords: Int!
+  validHashes: Int!
+}
+
+input VerifyHashInput {
+  datosVenta: DatosVentaInput!
+  hashEsperado: String!
+}
