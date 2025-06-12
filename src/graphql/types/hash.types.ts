@@ -1,5 +1,5 @@
 
-import { ObjectType, Field, ID, Int, Float } from '@nestjs/graphql';
+import { ObjectType, Field, ID, Int } from '@nestjs/graphql';
 
 
 @ObjectType()
@@ -17,7 +17,7 @@ export class DatabaseVerification {
   estadoEnBD: string;
 }
 
-// ✅ PASO 2: Luego declarar HashType
+
 @ObjectType()
 export class HashType {
   @Field(() => ID)
@@ -57,7 +57,7 @@ export class HashType {
   hashInput?: string;
 }
 
-// ✅ PASO 3: HashGenerationResult
+
 @ObjectType()
 export class HashGenerationResult {
   @Field()
@@ -76,7 +76,7 @@ export class HashGenerationResult {
   databaseId?: number;
 }
 
-// ✅ PASO 4: HashVerificationResult (ahora puede usar DatabaseVerification)
+
 @ObjectType()
 export class HashVerificationResult {
   @Field()
@@ -92,7 +92,7 @@ export class HashVerificationResult {
   databaseVerification?: DatabaseVerification;
 }
 
-// ✅ PASO 5: Resto de las clases
+
 @ObjectType()
 export class RestaurantHashStats {
   @Field(() => ID)

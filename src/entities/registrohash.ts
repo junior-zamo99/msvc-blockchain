@@ -1,5 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, Index } from 'typeorm';
-
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, Index, ManyToOne, JoinColumn } from 'typeorm';
+import { Bloque } from './bloque';
 
 @Entity('registros_hash')
 @Index('idx_venta_tenant_unico', ['ventaId', 'tenantId'], { unique: true })
@@ -48,7 +48,7 @@ export class RegistroHash {
     type: 'varchar', 
     length: 20, 
     default: 'CONFIRMADO',
-    comment: 'Estado del registro: PENDIENTE, CONFIRMADO, VERIFICADO, ERROR'
+    comment: 'Estado del registro: PENDIENTE, CONFIRMADO, EN_BLOQUE, VERIFICADO, ERROR'
   })
   estado: string;
 
@@ -93,4 +93,16 @@ export class RegistroHash {
     comment: 'Indica si el hash es válido según la última verificación'
   })
   esValido: boolean;
+  
+  
+  @ManyToOne(() => Bloque, bloque => bloque.registrosHash, { nullable: true })
+  @JoinColumn({ name: 'bloque_id' })
+  bloque: Bloque;
+  
+  @Column({
+    type: 'bigint',
+    nullable: true,
+    comment: 'ID del bloque al que pertenece este hash'
+  })
+  bloqueId: number;
 }

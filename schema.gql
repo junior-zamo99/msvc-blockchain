@@ -2,10 +2,32 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+type BloqueType {
+  altura: Int!
+  esValido: Boolean!
+  estado: String!
+  fechaCreacion: DateTime!
+  hashBloque: String!
+  hashBloqueAnterior: String!
+  id: ID!
+  merkleRoot: String!
+  nonce: Int!
+  numeroTransacciones: Int!
+  registrosHash: [HashType!]
+  timestamp: Int!
+}
+
 input ClienteInput {
   clienteId: ID
   email: String
   nombre: String
+}
+
+type CrearBloqueResult {
+  bloque: BloqueType
+  error: String
+  mensaje: String
+  success: Boolean!
 }
 
 type DatabaseVerification {
@@ -30,6 +52,19 @@ input DatosVentaInput {
   tenantId: ID!
   total: Float!
   ventaId: ID!
+}
+
+type ErrorVerificacion {
+  altura: Int!
+  motivo: String!
+}
+
+type EstadisticasBlockchain {
+  totalBloques: Int!
+  totalTransacciones: Int!
+  transaccionesPendientes: Int!
+  ultimaAltura: Int
+  ultimoBloqueFecha: DateTime
 }
 
 input GenerateHashInput {
@@ -82,6 +117,7 @@ input MesaInput {
 }
 
 type Mutation {
+  crearBloque(creadoPor: String): CrearBloqueResult!
   generateHash(input: GenerateHashInput!): HashGenerationResult!
   verifyHash(input: VerifyHashInput!): HashVerificationResult!
 }
@@ -95,9 +131,16 @@ input ProductoInput {
 }
 
 type Query {
+  bloquePorAltura(altura: Int!): BloqueType
+  bloques(limite: Int! = 10, offset: Int! = 0): [BloqueType!]!
   debugHash(datosVenta: DatosVentaInput!): HashDebugInfo!
+  estadisticasBlockchain: EstadisticasBlockchain!
+  estadoScheduler: String!
   restaurantHashes(limit: Int! = 50, tenantId: ID!): RestaurantHashStats!
   ventaHash(ventaId: ID!): HashType
+  verificarBloque(altura: Int!): VerificacionBloqueResult!
+  verificarCadenaCompleta: VerificacionCadenaResult!
+  verificarIntegridadVenta(tenantId: ID, ventaId: ID!, ventaServiceUrl: String): VentaVerificationResult!
 }
 
 type RestaurantHashStats {
@@ -106,6 +149,36 @@ type RestaurantHashStats {
   tenantId: ID!
   totalRecords: Int!
   validHashes: Int!
+}
+
+type VentaVerificationResult {
+  coinciden: Boolean
+  detalles: String
+  estado: String
+  fechaVerificacion: DateTime!
+  hashAlmacenado: String
+  hashCalculado: String
+  integra: Boolean!
+  mensaje: String!
+  tenantId: Float
+  ventaId: Float!
+}
+
+type VerificacionBloqueResult {
+  altura: Int!
+  esValido: Boolean!
+  hashBloque: String!
+  motivo: String
+  numeroTransacciones: Int!
+}
+
+type VerificacionCadenaResult {
+  altura: Int!
+  bloquesValidos: Int!
+  errores: [ErrorVerificacion!]!
+  esValida: Boolean!
+  fechaVerificacion: DateTime!
+  totalBloques: Int!
 }
 
 input VerifyHashInput {

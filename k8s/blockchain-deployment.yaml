@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: msvc-blockchain
+  namespace: blockchain
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: msvc-blockchain
+  template:
+    metadata:
+      labels:
+        app: msvc-blockchain
+    spec:
+      containers:
+      - name: blockchain
+        image: juniorzamo/blockchain:v1
+        ports:
+        - containerPort: 3000
+        env:
+        - name: DB_HOST
+          value: "mysql-blockchain"
+        - name: DB_PORT
+          value: "3306"
+        - name: DB_NAME
+          value: "msvc-blockchain"
+        - name: DB_USER
+          value: "root"
+        - name: DB_PASSWORD
+          value: "juniorzamo1999"
+        - name: NODE_ENV
+          value: "production"
+        - name: PORT
+          value: "3000"
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 3000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 3000
+          initialDelaySeconds: 60
+          periodSeconds: 20
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: msvc-blockchain
+  namespace: blockchain
+spec:
+  selector:
+    app: msvc-blockchain
+  ports:
+  - port: 3000
+    targetPort: 3000
+    protocol: TCP
+  type: LoadBalancer

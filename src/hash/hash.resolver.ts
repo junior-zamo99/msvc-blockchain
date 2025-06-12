@@ -17,17 +17,20 @@ import {
   VerifyHashInput,
   DatosVentaInput
 } from '../graphql/types/hash.inputs';
+import { VentaVerificationService } from './venta-verification.service';
+import { VentaVerificationResult } from 'src/graphql/types/venta-verification.types';
 
 @Resolver(() => HashType)
 export class HashResolver {
 
   constructor(
     private readonly hashService: HashService,
+     private readonly ventaVerificationService: VentaVerificationService,
     @InjectRepository(RegistroHash)
     private registroHashRepository: Repository<RegistroHash>
   ) {}
 
-  // ✅ MUTATION: Generar Hash
+ 
   @Mutation(() => HashGenerationResult)
   async generateHash(
     @Args('input') input: GenerateHashInput
@@ -39,7 +42,7 @@ export class HashResolver {
         throw new Error('Faltan campos requeridos: ventaId, tenantId, datosVenta');
       }
 
-      // Verificar si ya existe
+    
       const existing = await this.registroHashRepository.findOne({
         where: { 
           ventaId: input.ventaId,
@@ -59,7 +62,7 @@ export class HashResolver {
         };
       }
 
-      // Generar nuevo hash
+   
       const hashDetails = this.hashService.getHashDetails(input.datosVenta);
       
       const newRecord = this.registroHashRepository.create({
@@ -103,20 +106,18 @@ export class HashResolver {
       };
     }
   }
-
-  // ✅ MUTATION: Verificar Hash
+ 
   @Mutation(() => HashVerificationResult)
   async verifyHash(
     @Args('input') input: VerifyHashInput
   ): Promise<HashVerificationResult> {
     try {
-      // Verificación por cálculo
+      
       const isValidCalculated = this.hashService.verifyHash(
         input.datosVenta, 
         input.hashEsperado
       );
 
-      // Verificación contra base de datos
       let databaseVerification: DatabaseVerification | null = null;
       
       if (input.datosVenta.ventaId) {
@@ -132,7 +133,7 @@ export class HashResolver {
             estadoEnBD: record.estado
           };
           
-          // Actualizar verificación
+         
           await this.registroHashRepository.update(
             { ventaId: input.datosVenta.ventaId },
             { 
@@ -144,7 +145,7 @@ export class HashResolver {
         }
       }
 
-      // Crear resultado de verificación
+      
       const verificationResult = {
         isValid: isValidCalculated,
         message: isValidCalculated ? 
@@ -194,7 +195,7 @@ export class HashResolver {
     }
   }
 
-  // ✅ QUERY: Hashes de restaurante con estadísticas
+  
   @Query(() => RestaurantHashStats)
   async restaurantHashes(
     @Args('tenantId', { type: () => ID }) tenantId: number,
@@ -230,7 +231,6 @@ export class HashResolver {
     }
   }
 
-  // ✅ QUERY: Debug de hash
   @Query(() => HashDebugInfo)
   async debugHash(
     @Args('datosVenta') datosVenta: DatosVentaInput
@@ -270,9 +270,41 @@ export class HashResolver {
       hashInput: record.entradaHash
     };
     
-    // 🔍 Log temporal para debugging
+ 
     console.log('🏗️ HashType creado:', JSON.stringify(hashType, null, 2));
     
     return hashType;
   }
+
+
+
+  @Query(() => VentaVerificationResult)
+  async verificarIntegridadVenta(
+    @Args('ventaId', { type: () => ID }) ventaId: number,
+    @Args('tenantId', { type: () => ID, nullable: true }) tenantId: number,
+    @Args('ventaServiceUrl', { nullable: true }) ventaServiceUrl: string
+  ): Promise<VentaVerificationResult> {
+    try {
+      console.log(`🔍 Verificando integridad completa de venta: ${ventaId}`);
+      
+      
+      const resultado = await this.ventaVerificationService.verificarVentaCompleta(
+        ventaId, 
+        tenantId, 
+        ventaServiceUrl
+      );
+      
+      return resultado;
+    } catch (error) {
+      console.error('❌ Error en verificación completa:', error);
+      throw new HttpException(
+        `Error verificando venta: ${error.message}`, 
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
+
+
+  
+
 }
